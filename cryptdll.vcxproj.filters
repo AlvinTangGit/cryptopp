@@ -17,6 +17,9 @@
     <ClCompile Include="algparam.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="allocate.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="asn.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -143,6 +146,9 @@
     <ClCompile Include="pkcspad.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="primetab.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="pssr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -203,6 +209,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="algparam.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="allocate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="argnames.h">
@@ -438,6 +447,9 @@
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="x64dll.asm">
+      <Filter>Source Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="cpuid64.asm">
       <Filter>Source Files</Filter>
     </CustomBuild>
   </ItemGroup>

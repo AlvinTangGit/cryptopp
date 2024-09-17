@@ -29,7 +29,6 @@
 
 NAMESPACE_BEGIN(CryptoPP)
 
-CRYPTOPP_COMPILE_ASSERT(SIZE_MAX > 0);
 CRYPTOPP_COMPILE_ASSERT(sizeof(byte) == 1);
 CRYPTOPP_COMPILE_ASSERT(sizeof(word16) == 2);
 CRYPTOPP_COMPILE_ASSERT(sizeof(word32) == 4);
@@ -334,20 +333,20 @@ void RandomNumberGenerator::GenerateIntoBufferedTransformation(BufferedTransform
 	}
 }
 
-size_t KeyDerivationFunction::MinDerivedLength() const
+size_t KeyDerivationFunction::MinDerivedKeyLength() const
 {
 	return 0;
 }
 
-size_t KeyDerivationFunction::MaxDerivedLength() const
+size_t KeyDerivationFunction::MaxDerivedKeyLength() const
 {
 	return static_cast<size_t>(-1);
 }
 
-void KeyDerivationFunction::ThrowIfInvalidDerivedLength(size_t length) const
+void KeyDerivationFunction::ThrowIfInvalidDerivedKeyLength(size_t length) const
 {
 	if (!IsValidDerivedLength(length))
-		throw InvalidDerivedLength(GetAlgorithm().AlgorithmName(), length);
+		throw InvalidDerivedKeyLength(GetAlgorithm().AlgorithmName(), length);
 }
 
 void KeyDerivationFunction::SetParameters(const NameValuePairs& params) {
@@ -648,7 +647,12 @@ size_t BufferedTransformation::TransferMessagesTo2(BufferedTransformation &targe
 
 			while (AnyRetrievable())
 			{
-				transferredBytes = LWORD_MAX;
+				// MaxRetrievable() instead of LWORD_MAX due to GH #962. If
+				// the target calls CreatePutSpace(), then the allocation
+				// size will be LWORD_MAX. That happens when target is a
+				// ByteQueue. Maybe ByteQueue should check the size, and if
+				// it is LWORD_MAX or -1, then use a default like 4096.
+				transferredBytes = MaxRetrievable();
 				blockedBytes = TransferTo2(target, transferredBytes, channel, blocking);
 				if (blockedBytes > 0)
 					return blockedBytes;
@@ -771,9 +775,9 @@ size_t BufferedTransformation::PeekWord16(word16 &value, ByteOrder order) const
 	size_t len = Peek(buf, 2);
 
 	if (order == BIG_ENDIAN_ORDER)
-		value = ((word16)buf[0] << 8) | (word16)buf[1];
+		value = word16((buf[0] << 8) | buf[1]);
 	else
-		value = ((word16)buf[1] << 8) | (word16)buf[0];
+		value = word16((buf[1] << 8) | buf[0]);
 
 	return len;
 }
@@ -784,11 +788,11 @@ size_t BufferedTransformation::PeekWord32(word32 &value, ByteOrder order) const
 	size_t len = Peek(buf, 4);
 
 	if (order == BIG_ENDIAN_ORDER)
-		value = ((word32)buf[0] << 24) | ((word32)buf[1] << 16) |
-		        ((word32)buf[2] << 8)  |  (word32)buf[3];
+		value = word32((buf[0] << 24) | (buf[1] << 16) |
+		               (buf[2] << 8)  | (buf[3] << 0));
 	else
-		value = ((word32)buf[3] << 24) | ((word32)buf[2] << 16) |
-		        ((word32)buf[1] << 8)  |  (word32)buf[0];
+		value = word32((buf[3] << 24) | (buf[2] << 16) |
+		               (buf[1] << 8)  | (buf[0] << 0));
 
 	return len;
 }
@@ -1014,7 +1018,7 @@ int LibraryVersion(CRYPTOPP_NOINLINE_DOTDOTDOT)
 class NullNameValuePairs : public NameValuePairs
 {
 public:
-	NullNameValuePairs() {}    //  Clang complains a default ctor must be avilable
+	NullNameValuePairs() {}    //  Clang complains a default ctor must be available
 	bool GetVoidValue(const char *name, const std::type_info &valueType, void *pValue) const
 		{CRYPTOPP_UNUSED(name); CRYPTOPP_UNUSED(valueType); CRYPTOPP_UNUSED(pValue); return false;}
 };
